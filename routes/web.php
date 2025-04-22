@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DokterController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OdontogramController;
 
 
 Route::get('/', function () {
@@ -21,6 +22,7 @@ Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard')
 // Dokter
 Route::get('/pasien', [DokterController::class, 'index'])->name('dokter.pasien');
 Route::get('/jadwal', [DokterController::class, 'schedule'])->name('dokter.jadwal');
+Route::get('/odontogram/{id}/view-model', [OdontogramController::class, 'viewModel'])->name('odontogram.viewModel');
 
 //Login
 Route::get('/login', function () {
