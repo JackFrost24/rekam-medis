@@ -15,7 +15,18 @@ class MedicalRecord extends Model
     ];
 
     public function patient()
-    {
-        return $this->belongsTo(Patient::class);
-    }
+{
+    return $this->belongsTo(Patient::class);
+}
+
+public function dokter()
+{
+    return $this->belongsTo(User::class, 'dokter_id');
+}
+
+public function odontogram()
+{
+    return $this->hasOne(Odontogram::class);
+}
+
 }

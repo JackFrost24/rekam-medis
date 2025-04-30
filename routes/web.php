@@ -7,22 +7,28 @@ use App\Http\Controllers\DokterController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OdontogramController;
-
+use App\Http\Controllers\PasienController;
 
 Route::get('/', function () {
     return redirect('/login');
 });
 
-
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Dokter
+Route::get('/dokter/dashboard', [DokterController::class, 'dashboard']);
 
 // Admin
-Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+
 
 // Dokter
 Route::get('/pasien', [DokterController::class, 'index'])->name('dokter.pasien');
 Route::get('/jadwal', [DokterController::class, 'schedule'])->name('dokter.jadwal');
 Route::get('/odontogram/{id}/view-model', [OdontogramController::class, 'viewModel'])->name('odontogram.viewModel');
+Route::get('/dokter/pasien/input', function () {
+    return view('dokter.input-pasien');
+});
+
+Route::post('/pasien', [PasienController::class, 'store'])->name('pasien.store');
 
 //Login
 Route::get('/login', function () {

@@ -8,6 +8,8 @@ export default defineConfig({
                 'resources/sass/app.scss',
                 'resources/js/app.js',
                 'resources/js/view-model.js',
+                'resources/js/odontogram.js',
+                'resources/css/odontogram.css'
             ],
             refresh: true,
         }),

@@ -23,10 +23,11 @@ class Patient extends Model
         return $this->hasMany(Odontogram::class);
     }
 
-    public function medicalRecord()
+    public function medicalRecords()
     {
-        return $this->hasOne(MedicalRecord::class);
+        return $this->hasMany(MedicalRecord::class);
     }
+
 
     
 }

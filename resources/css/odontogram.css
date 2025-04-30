@@ -1,0 +1,85 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+.odontogram {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.jaw {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.tooth {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+    cursor: pointer;
+    background-color: #fff;
+    transition: all 0.3s;
+}
+
+.tooth:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.1);
+}
+
+/* Warna untuk kondisi gigi */
+.tooth.healthy { background-color: #ffffff; }
+.tooth.caries { background-color: #ff9999; }
+.tooth.filling { background-color: #99ccff; }
+.tooth.extracted { background-color: #000000; color: white; }
+.tooth.root_canal { background-color: #cc99ff; }
+.tooth.crown { background-color: #ffcc99; }
+
+.tooth-details {
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+select, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+textarea {
+    height: 100px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
