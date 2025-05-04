@@ -7,7 +7,7 @@ use App\Http\Controllers\DokterController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OdontogramController;
-use App\Http\Controllers\PasienController;
+use App\Http\Controllers\PatientController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -28,7 +28,7 @@ Route::get('/dokter/pasien/input', function () {
     return view('dokter.input-pasien');
 });
 
-Route::post('/pasien', [PasienController::class, 'store'])->name('pasien.store');
+Route::resource('patients', PatientController::class);
 
 //Login
 Route::get('/login', function () {
@@ -39,6 +39,10 @@ Route::get('/login', function () {
 
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+//sementara
+Route::post('/api/patients', [PatientController::class, 'store']);
 
 // <- tambahkan ini di paling bawah file web.php
 require __DIR__.'/auth.php';

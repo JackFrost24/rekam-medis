@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+<div class="max-w-3xl mx-auto px-4 py-4">
     <div class="min-h-screen flex flex-col items-center py-8">
-        <h1 class="text-2xl font-bold mb-6">Patient Input Form</h1>
+        <h1 class="text-2xl font-bold mb-4">Patient Input Form</h1>
 
-        <form class="w-full max-w-3xl bg-white p-6 rounded shadow">
+        <form id="patientForm" method="POST" action="{{ route('patients.store') }}" class="w-full max-w-3xl bg-white p-6 rounded shadow">
           <input type="hidden" name="odontogram_data" id="odontogram_data">
             <!-- General Information -->
             <section class="mb-6">
@@ -35,7 +35,7 @@
             </section>
 
             <!-- Odontogram -->
-            <section class="mb-6">
+            <div class="odontogram-container mb-4">
                 <h2 class="text-xl font-semibold mb-4">Odontogram</h2>
 
                 <div class="odontogram">
@@ -108,8 +108,8 @@
             </div>
                 </div>
 
-                <div class="tooth-details mt-6">
-                    <h3>Detail Gigi: <span id="selected-tooth"></span></h3>
+                <div class="tooth-details bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h3 class="font-medium text-lg mb-3">Detail Gigi: <span id="selected-tooth" class="font-bold"></span></h3>
                     <form id="tooth-form">
                         <div class="form-group">
                             <label for="condition">Kondisi:</label>
@@ -138,7 +138,6 @@
                             <textarea id="notes" name="notes"></textarea>
                         </div>
                         <button type="submit">Simpan</button>
-                    </form>
                 </div>
             </section>
 
@@ -189,13 +188,5 @@
     </div>
 </div>
 @endsection
-
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-@endpush
-
-@push('scripts')
-<script src="{{ asset('js/script.js') }}"></script>
-@endpush
 
 @vite(['resources/css/odontogram.css', 'resources/js/odontogram.js'])

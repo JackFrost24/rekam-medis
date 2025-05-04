@@ -16,7 +16,6 @@ class DatabaseSeeder extends Seeder
         UserSeeder::class,
         PatientSeeder::class,
         OdontogramSeeder::class,
-        OdontogramEntrySeeder::class,
     ]);
 }
 

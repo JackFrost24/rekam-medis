@@ -10,9 +10,11 @@ class CreateOdontogramsTable extends Migration
     {
         Schema::create('odontograms', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('patient_id')->constrained()->onDelete('cascade'); // Relasi ke tabel pasien
-            $table->date('date')->nullable();
-            $table->text('notes')->nullable(); // Catatan tambahan dari dokter
+            $table->foreignId('patient_id')->constrained();
+            $table->integer('tooth_number'); // Nomor gigi (11, 12, ..., 28, etc)
+            $table->enum('condition', ['healthy', 'caries', 'filling', 'extracted', 'root_canal', 'crown']);
+            $table->enum('surface', ['whole', 'buccal', 'lingual', 'occlusal', 'mesial', 'distal']);
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

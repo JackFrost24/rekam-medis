@@ -11,11 +11,16 @@ class CreatePatientsTable extends Migration
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('gender', ['L', 'P']);
-            $table->date('birthdate')->nullable();
-            $table->string('medical_record_number')->unique();
-            $table->text('address');
-            $table->string('phone_number');
+            $table->integer('age');
+            $table->enum('gender', ['male', 'female']);
+            $table->string('contact_number');
+            $table->text('doctor_notes')->nullable();
+            $table->string('occlusion')->nullable();
+            $table->string('torus_palatinus')->nullable();
+            $table->string('torus_mandibularis')->nullable();
+            $table->string('supernumerary_teeth')->nullable();
+            $table->string('diastema')->nullable();
+            $table->string('other_anomalies')->nullable();
             $table->timestamps();
         });
     }
