@@ -11,4 +11,15 @@ class DokterController extends Controller
     return view('dokter.DokterDashboard');
 }
 
+public function inputPasien()
+{
+    $bloodTypes = [
+        'A' => 'A',
+        'B' => 'B',
+        'AB' => 'AB',
+        'O' => 'O'
+    ];
+
+    return view('dokter.input-pasien', compact('bloodTypes'));
+}
 }

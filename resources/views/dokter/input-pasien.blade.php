@@ -1,19 +1,25 @@
 @extends('layouts.app')
 
+@section('head')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-4">
     <div class="min-h-screen flex flex-col items-center py-8">
         <h1 class="text-2xl font-bold mb-4">Patient Input Form</h1>
 
         <form id="patientForm" method="POST" action="{{ route('patients.store') }}" class="w-full max-w-3xl bg-white p-6 rounded shadow">
-          <input type="hidden" name="odontogram_data" id="odontogram_data">
+            @csrf
+            <input type="hidden" name="odontogram_data" id="odontogram_data">
+
             <!-- General Information -->
             <section class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">General Information</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="name" class="block text-sm font-medium">Patient Name</label>
-                        <input type="text" id="name" name="name" class="mt-1 block w-full p-2 border rounded" placeholder="Enter patient name" />
+                        <label for="name" class="block text-sm font-medium">Patient Name *</label>
+                        <input type="text" id="name" name="name" required class="mt-1 block w-full p-2 border rounded" placeholder="Enter patient name" />
                     </div>
                     <div>
                         <label for="age" class="block text-sm font-medium">Age</label>
@@ -28,8 +34,65 @@
                         </select>
                     </div>
                     <div>
-                        <label for="contact" class="block text-sm font-medium">Contact Number</label>
-                        <input type="text" id="contact" name="contact" class="mt-1 block w-full p-2 border rounded" placeholder="Enter contact number" />
+                        <label for="contact" class="block text-sm font-medium">Contact Number *</label>
+                        <input type="text" id="contact" name="contact" required class="mt-1 block w-full p-2 border rounded" placeholder="Enter contact number" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="address" class="block text-sm font-medium">Address</label>
+                        <textarea id="address" name="address" rows="2" class="mt-1 block w-full p-2 border rounded" placeholder="Enter patient address"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Medical Information -->
+            <section class="mb-6">
+                <h2 class="text-xl font-semibold mb-4">Medical Information</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="blood_type" class="block text-sm font-medium">Blood Type</label>
+                        <select id="blood_type" name="blood_type" class="mt-1 block w-full p-2 border rounded">
+                            <option value="">Select blood type</option>
+                            @foreach($bloodTypes as $key => $value)
+                                <option value="{{ $key }}">{{ $value }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="blood_pressure" class="block text-sm font-medium">Blood Pressure</label>
+                        <input type="text" id="blood_pressure" name="blood_pressure" class="mt-1 block w-full p-2 border rounded" placeholder="e.g. 120/80" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium">Medical History</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="heart_disease" name="heart_disease" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <span class="ml-2">Heart Disease</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="diabetes" name="diabetes" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <span class="ml-2">Diabetes</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="hepatitis" name="hepatitis" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <span class="ml-2">Hepatitis</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="allergies" class="block text-sm font-medium">Allergies</label>
+                        <textarea id="allergies" name="allergies" rows="2" class="mt-1 block w-full p-2 border rounded" placeholder="List any allergies"></textarea>
+                    </div>
+                    <div>
+                        <label for="blood_disorders" class="block text-sm font-medium">Blood Disorders</label>
+                        <textarea id="blood_disorders" name="blood_disorders" rows="2" class="mt-1 block w-full p-2 border rounded" placeholder="List any blood disorders"></textarea>
+                    </div>
+                    <div>
+                        <label for="other_diseases" class="block text-sm font-medium">Other Diseases</label>
+                        <textarea id="other_diseases" name="other_diseases" rows="2" class="mt-1 block w-full p-2 border rounded" placeholder="List any other diseases"></textarea>
+                    </div>
+                    <div>
+                        <label for="current_medication" class="block text-sm font-medium">Current Medication</label>
+                        <textarea id="current_medication" name="current_medication" rows="2" class="mt-1 block w-full p-2 border rounded" placeholder="List current medications"></textarea>
                     </div>
                 </div>
             </section>
@@ -110,7 +173,6 @@
 
                 <div class="tooth-details bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <h3 class="font-medium text-lg mb-3">Detail Gigi: <span id="selected-tooth" class="font-bold"></span></h3>
-                    <form id="tooth-form">
                         <div class="form-group">
                             <label for="condition">Kondisi:</label>
                             <select id="condition" name="condition">
@@ -138,6 +200,9 @@
                             <textarea id="notes" name="notes"></textarea>
                         </div>
                         <button type="submit">Simpan</button>
+                        <button type="button" id="show3dBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 hidden">
+                            Tampilkan 3D
+                        </button>
                 </div>
             </section>
 
@@ -145,7 +210,6 @@
             <section class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Dental Conditions</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Input lainnya -->
                     <div>
                         <label for="occlusion" class="block text-sm font-medium">Occlusion</label>
                         <input type="text" id="occlusion" name="occlusion" class="mt-1 block w-full p-2 border rounded" placeholder="Enter occlusion" />
@@ -174,14 +238,14 @@
             </section>
 
             <!-- Doctor's Notes -->
-            <section>
+            <section class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Doctor's Notes</h2>
                 <textarea id="doctor_notes" name="doctor_notes" rows="4" class="mt-1 block w-full p-2 border rounded" placeholder="Enter any additional notes here"></textarea>
             </section>
 
             <div class="mt-6 flex justify-end">
                 <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                    Submit
+                    Submit Patient Data
                 </button>
             </div>
         </form>
@@ -189,4 +253,79 @@
 </div>
 @endsection
 
-@vite(['resources/css/odontogram.css', 'resources/js/odontogram.js'])
+@push('styles')
+<style>
+    .tooth {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        margin: 2px;
+        text-align: center;
+        line-height: 30px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .tooth:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .tooth.active {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Tooth condition styles */
+    .healthy { background-color: #d1fae5; }
+    .caries { background-color: #fecaca; }
+    .filling { background-color: #bfdbfe; }
+    .extracted { background-color: #e5e7eb; text-decoration: line-through; }
+    .root_canal { background-color: #ddd6fe; }
+    .crown { background-color: #fef08a; }
+    
+    .jaw {
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    
+    .upper-jaw, .middle-upper-jaw {
+        margin-bottom: 5px;
+    }
+    
+    .lower-jaw, .middle-lower-jaw {
+        margin-top: 5px;
+    }
+    
+    /* Toast styles */
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 16px;
+        border-radius: 4px;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+    
+    .toast.info { background-color: #3b82f6; }
+    .toast.success { background-color: #10b981; }
+    .toast.error { background-color: #ef4444; }
+    .toast.warning { background-color: #f59e0b; }
+</style>
+@endpush
+
+@php
+    $bloodTypes = $bloodTypes ?? [
+        'A' => 'A',
+        'B' => 'B',
+        'AB' => 'AB',
+        'O' => 'O'
+    ];
+@endphp
+
+@vite(['resources/css/app.css', 'resources/js/odontogram.js'])

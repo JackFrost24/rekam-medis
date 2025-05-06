@@ -1,48 +1,80 @@
 <?php
 
-// app/Http/Controllers/PatientController.php
 namespace App\Http\Controllers;
 
 use App\Models\Patient;
-use App\Models\Odontogram;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PatientController extends Controller
 {
+    public function create()
+{
+    return view('patients.create', [
+        'bloodTypes' => [
+            'A' => 'A',
+            'B' => 'B',
+            'AB' => 'AB',
+            'O' => 'O'
+        ]
+    ]);
+}
+
     public function store(Request $request)
     {
-        // Validasi data utama pasien
         $validated = $request->validate([
+            // General Information
             'name' => 'required|string|max:255',
-            'age' => 'required|integer|min:1',
-            'gender' => 'required|in:male,female',
-            'contact_number' => 'required|string|max:20',
-            'doctor_notes' => 'nullable|string',
+            'age' => 'nullable|integer|min:0|max:120',
+            'gender' => 'nullable|in:male,female',
+            'contact' => 'required|string|max:20',
+            'address' => 'nullable|string|max:500',
+            
+            // Medical Information
+            'blood_type' => 'nullable|in:A,B,AB,O',
+            'blood_pressure' => 'nullable|string|max:20',
+            'heart_disease' => 'nullable|boolean',
+            'diabetes' => 'nullable|boolean',
+            'hepatitis' => 'nullable|boolean',
+            'allergies' => 'nullable|string',
+            'blood_disorders' => 'nullable|string',
+            'other_diseases' => 'nullable|string',
+            'current_medication' => 'nullable|string',
+            
+            // Dental Information
             'occlusion' => 'nullable|string',
             'torus_palatinus' => 'nullable|string',
             'torus_mandibularis' => 'nullable|string',
-            'supernumerary_teeth' => 'nullable|string',
+            'supernumerary' => 'nullable|string',
             'diastema' => 'nullable|string',
             'other_anomalies' => 'nullable|string',
-            'odontogram_data' => 'required|json' // Data odontogram dalam format JSON
+            'doctor_notes' => 'nullable|string',
+            'odontogram_data' => 'nullable|json'
         ]);
 
-        // Simpan data pasien
-        $patient = Patient::create($validated);
-
-        // Proses data odontogram
-        $odontogramData = json_decode($request->odontogram_data, true);
-        
-        foreach ($odontogramData as $tooth) {
-            Odontogram::create([
+        try {
+            $patient = Patient::create($validated);
+            
+            Log::info('Patient created successfully', [
                 'patient_id' => $patient->id,
-                'tooth_number' => $tooth['number'],
-                'condition' => $tooth['condition'],
-                'surface' => $tooth['surface'],
-                'notes' => $tooth['notes'] ?? null
+                'name' => $patient->name
             ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Patient data saved successfully',
+                'redirect' => route('patients.show', $patient->id)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error saving patient data', [
+                'error' => $e->getMessage(),
+                'data' => $request->except('odontogram_data')
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save patient data. Please try again.'
+            ], 500);
         }
-
-        return response()->json(['success' => true]);
     }
 }
