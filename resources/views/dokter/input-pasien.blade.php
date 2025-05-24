@@ -1,11 +1,7 @@
 @extends('layouts.app')
 
 @section('head')
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
-
-<meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('content')
@@ -203,7 +199,10 @@
                             <label for="notes">Catatan:</label>
                             <textarea id="notes" name="notes"></textarea>
                         </div>
-                        <button id="saveOdontogram" type="button">Simpan Data Gigi</button>
+                        <button type="submit">Simpan</button>
+                        <button type="button" id="show3dBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 hidden">
+                            Tampilkan 3D
+                        </button>
                 </div>
             </section>
 
@@ -248,7 +247,6 @@
                 <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                     Submit Patient Data
                 </button>
-                <button id="show3dBtn" type="button" style="display:none">Show 3D</button>
             </div>
         </form>
     </div>

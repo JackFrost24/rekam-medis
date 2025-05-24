@@ -21,7 +21,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role' // Tambahkan ini jika menggunakan kolom role langsung
     ];
 
     /**
@@ -52,11 +51,4 @@ class User extends Authenticatable
         return $this->hasMany(MedicalRecord::class, 'dokter_id');
     }
 
-    /**
-     * Check if user has specific role
-     */
-    public function hasRole(string $role): bool
-    {
-        return $this->attributes['role'] === $role;
-    }
 }

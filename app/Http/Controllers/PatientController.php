@@ -4,27 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Patient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PatientController extends Controller
 {
-    /**
-     * Menampilkan form input pasien
-     */
     public function create()
 {
-    $bloodTypes = [
-        'A' => 'A',
-        'B' => 'B',
-        'AB' => 'AB',
-        'O' => 'O'
-    ];
-
-    return view('patients.input-pasien', compact('bloodTypes'));
+    return view('patients.create', [
+        'bloodTypes' => [
+            'A' => 'A',
+            'B' => 'B',
+            'AB' => 'AB',
+            'O' => 'O'
+        ]
+    ]);
 }
 
-    /**
-     * Menyimpan data pasien baru
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -57,27 +52,29 @@ class PatientController extends Controller
             'odontogram_data' => 'nullable|json'
         ]);
 
-        $patient = Patient::create($validated);
-
-        return response()->json([
-            'success' => true,
-            'redirect' => route('patients.show', $patient->id)
-        ]);
+        try {
+            $patient = Patient::create($validated);
+            
+            Log::info('Patient created successfully', [
+                'patient_id' => $patient->id,
+                'name' => $patient->name
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Patient data saved successfully',
+                'redirect' => route('patients.show', $patient->id)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error saving patient data', [
+                'error' => $e->getMessage(),
+                'data' => $request->except('odontogram_data')
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save patient data. Please try again.'
+            ], 500);
+        }
     }
-
-    /**
-     * Menampilkan viewer odontogram 3D
-     */
-    public function showOdontogram($id)
-{
-    $patient = Patient::findOrFail($id);
-    $odontogramData = json_decode($patient->odontogram_data, true) ?? [];
-
-    return view('patients.odontogram-viewer', [
-        'patient' => $patient,
-        'odontogramData' => $odontogramData
-    ]);
-}
-
-    
 }
