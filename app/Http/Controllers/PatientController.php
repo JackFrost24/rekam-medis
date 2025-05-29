@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Log;
 
 class PatientController extends Controller
 {
-    public function create()
+    public function show($id)
 {
-    return view('patients.create', [
+    $patient = Patient::with('odontogram')->findOrFail($id);
+    
+    return view('patients.show', [
+        'patient' => $patient,
         'bloodTypes' => [
             'A' => 'A',
             'B' => 'B',
@@ -52,6 +55,8 @@ class PatientController extends Controller
             'odontogram_data' => 'nullable|json'
         ]);
 
+        
+
         try {
             $patient = Patient::create($validated);
             
@@ -61,10 +66,11 @@ class PatientController extends Controller
             ]);
             
             return response()->json([
-                'success' => true,
-                'message' => 'Patient data saved successfully',
-                'redirect' => route('patients.show', $patient->id)
+            'success' => true,
+            'message' => 'Patient data saved successfully',
+            'redirect' => route('dokter.pasien') // Ganti dengan route yang sesuai
             ]);
+            
         } catch (\Exception $e) {
             Log::error('Error saving patient data', [
                 'error' => $e->getMessage(),
