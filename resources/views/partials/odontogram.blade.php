@@ -34,13 +34,26 @@
     <form id="tooth-form" class="space-y-4">
         <div class="form-group">
             <label for="condition" class="block">Kondisi:</label>
-            <select id="condition" name="condition" class="w-full p-2 border rounded">
+            <select id="condition" name="condition" class="w-full p-2 border rounded kondisi-select">
                 <option value="healthy">Sehat</option>
                 <option value="caries">Karies</option>
                 <option value="filling">Tambalan</option>
                 <option value="extracted">Dicabut</option>
                 <option value="root_canal">Perawatan Saluran Akar</option>
                 <option value="crown">Mahkota</option>
+            </select>
+        </div>
+        
+        <div class="form-group gv-black-container hidden">
+            <label for="gv_black_class" class="block">Klasifikasi GV Black:</label>
+            <select id="gv_black_class" name="gv_black_class" class="w-full p-2 border rounded">
+                <option value="">Pilih Kelas</option>
+                <option value="1">Kelas 1</option>
+                <option value="2">Kelas 2</option>
+                <option value="3">Kelas 3</option>
+                <option value="4">Kelas 4</option>
+                <option value="5">Kelas 5</option>
+                <option value="6">Kelas 6</option>
             </select>
         </div>
         
@@ -72,6 +85,18 @@
     </form>
 </div>
 
+<!-- 3D View Buttons -->
+<div class="hidden mt-4" id="show3dButtons">
+    <button id="show3dAdult" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 mr-2">
+        Tampilkan 3D Dewasa
+    </button>
+    <button id="show3dChild" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+        Tampilkan 3D Anak
+    </button>
+</div>
+
+<input type="hidden" id="odontogram_data" name="odontogram_data">
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -81,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const toothDetails = document.getElementById('toothDetails');
     const closeDetailsBtn = document.getElementById('close-details');
     const saveOdontogramBtn = document.getElementById('save-odontogram');
-    const show3dBtn = document.getElementById('show-3d');
+    const show3dButtons = document.getElementById('show3dButtons');
     const odontogramDataInput = document.getElementById('odontogram_data');
     
     // Store teeth data
@@ -92,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const toothNumber = tooth.getAttribute('data-number');
         teethData[toothNumber] = {
             condition: 'healthy',
+            gv_black_class: '',
             surface: 'whole',
             notes: ''
         };
@@ -103,12 +129,31 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Fill form with existing data
             document.getElementById('condition').value = teethData[toothNumber].condition;
+            document.getElementById('gv_black_class').value = teethData[toothNumber].gv_black_class;
             document.getElementById('surface').value = teethData[toothNumber].surface;
             document.getElementById('notes').value = teethData[toothNumber].notes;
+            
+            // Toggle GV Black dropdown based on condition
+            toggleGVBlackDropdown(teethData[toothNumber].condition);
             
             // Scroll to details
             toothDetails.scrollIntoView({ behavior: 'smooth' });
         });
+    });
+    
+    // Toggle GV Black dropdown
+    function toggleGVBlackDropdown(condition) {
+        const gvContainer = document.querySelector('.gv-black-container');
+        if (condition === 'caries') {
+            gvContainer.classList.remove('hidden');
+        } else {
+            gvContainer.classList.add('hidden');
+        }
+    }
+    
+    // Handle condition change
+    document.getElementById('condition').addEventListener('change', function() {
+        toggleGVBlackDropdown(this.value);
     });
     
     // Close details form
@@ -126,6 +171,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update teeth data
         teethData[toothNumber] = {
             condition: document.getElementById('condition').value,
+            gv_black_class: document.getElementById('condition').value === 'caries' 
+                ? document.getElementById('gv_black_class').value 
+                : '',
             surface: document.getElementById('surface').value,
             notes: document.getElementById('notes').value
         };
@@ -141,16 +189,25 @@ document.addEventListener('DOMContentLoaded', function() {
     saveOdontogramBtn.addEventListener('click', function() {
         odontogramDataInput.value = JSON.stringify(teethData);
         showToast('Odontogram tersimpan!', 'success');
-        show3dBtn.classList.remove('hidden');
+        show3dButtons.classList.remove('hidden');
     });
     
-    // Handle 3D view button
-    show3dBtn.addEventListener('click', function() {
+    // Handle 3D Adult view button
+    document.getElementById('show3dAdult').addEventListener('click', function() {
         if (!odontogramDataInput.value) {
             showToast('Simpan odontogram terlebih dahulu!', 'error');
             return;
         }
-        window.location.href = `/3d-model?data=${encodeURIComponent(odontogramDataInput.value)}`;
+        window.location.href = `/3d-model?data=${encodeURIComponent(odontogramDataInput.value)}&type=adult`;
+    });
+    
+    // Handle 3D Child view button
+    document.getElementById('show3dChild').addEventListener('click', function() {
+        if (!odontogramDataInput.value) {
+            showToast('Simpan odontogram terlebih dahulu!', 'error');
+            return;
+        }
+        window.location.href = `/3d-model?data=${encodeURIComponent(odontogramDataInput.value)}&type=child`;
     });
     
     // Helper function to update tooth appearance
@@ -167,7 +224,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Helper function to show toast messages
     function showToast(message, type = 'info') {
         const toast = document.createElement('div');
-        toast.className = `fixed top-4 right-4 px-4 py-2 rounded text-white toast-${type}`;
+        toast.className = `fixed top-4 right-4 px-4 py-2 rounded text-white ${
+            type === 'success' ? 'bg-green-500' : 
+            type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+        }`;
         toast.textContent = message;
         document.body.appendChild(toast);
         

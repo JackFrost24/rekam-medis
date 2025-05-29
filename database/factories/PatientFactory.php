@@ -9,6 +9,7 @@ class PatientFactory extends Factory
     public function definition()
     {
         return [
+            // General Information
             'name' => $this->faker->name,
             'age' => $this->faker->numberBetween(5, 90),
             'gender' => $this->faker->randomElement(['male', 'female']),
@@ -16,8 +17,8 @@ class PatientFactory extends Factory
             'address' => $this->faker->address,
             
             // Medical Information
-            'blood_type' => $this->faker->randomElement(['A', 'B', 'AB', 'O']),
-            'blood_pressure' => $this->faker->randomElement(['120/80', '130/85', '110/70', '140/90']),
+            'blood_type' => $this->faker->randomElement(['A', 'B', 'AB', 'O', null]),
+            'blood_pressure' => $this->faker->optional()->randomElement(['120/80', '130/85', '110/70', '140/90']),
             'heart_disease' => $this->faker->boolean(20),
             'diabetes' => $this->faker->boolean(15),
             'hepatitis' => $this->faker->boolean(10),
@@ -33,8 +34,7 @@ class PatientFactory extends Factory
             'supernumerary' => $this->faker->optional()->word,
             'diastema' => $this->faker->optional()->word,
             'other_anomalies' => $this->faker->optional()->sentence,
-            'doctor_notes' => $this->faker->optional()->paragraph,
-            'odontogram_data' => null
+            'doctor_notes' => $this->faker->optional()->paragraph
         ];
     }
 }

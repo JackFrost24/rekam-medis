@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // Pastikan ini diimport
 
 class Appointment extends Model
 {
@@ -19,11 +19,21 @@ class Appointment extends Model
         'appointment_date' => 'datetime'
     ];
 
+    /**
+     * Get the patient that owns the appointment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
     }
 
+    /**
+     * Get the doctor that owns the appointment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

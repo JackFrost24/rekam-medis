@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inisialisasi variabel
     let selectedTooth = null;
     const odontogramData = {};
-    let scene, camera, renderer, toothModels = {};
+    let scene, camera, renderer;
     const toothConditions = {
         'healthy': 0xffffff,
         'caries': 0xff0000,
@@ -28,61 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
-    }
-
-    // Fungsi untuk mengupdate data odontogram
-    function updateOdontogramData() {
-        if (!selectedTooth) {
-            showToast('error', 'Silakan pilih gigi terlebih dahulu');
-            return;
-        }
-        
-        const condition = document.getElementById('condition').value;
-        const surface = document.getElementById('surface').value;
-        const notes = document.getElementById('notes').value;
-        
-        odontogramData[selectedTooth] = {
-            condition,
-            surface,
-            notes,
-            updated_at: new Date().toISOString()
-        };
-        
-        updateToothAppearance(selectedTooth, condition);
-        document.getElementById('odontogram_data').value = JSON.stringify(odontogramData);
-        showToast('success', `Data gigi ${selectedTooth} berhasil disimpan`);
-        
-        // Tampilkan tombol 3D jika ada data
-        document.getElementById('show3dBtn').classList.remove('hidden');
-    }
-
-    // Fungsi untuk mengupdate tampilan gigi
-    function updateToothAppearance(toothNumber, condition) {
-        const toothElement = document.querySelector(`.tooth[data-number="${toothNumber}"]`);
-        toothElement.classList.remove('healthy', 'caries', 'filling', 'extracted', 'root_canal', 'crown');
-        toothElement.classList.add(condition);
-        
-        // Update tampilan permukaan gigi
-        toothElement.style.backgroundImage = 'none';
-        if (condition !== 'healthy' && condition !== 'extracted') {
-            const surface = odontogramData[toothNumber]?.surface || 'whole';
-            applySurfaceStyle(toothElement, surface);
-        }
-    }
-
-    // Fungsi untuk menambahkan style permukaan gigi
-    function applySurfaceStyle(element, surface) {
-        const colors = {
-            'buccal': 'linear-gradient(to right, transparent 50%, currentColor 50%)',
-            'lingual': 'linear-gradient(to left, transparent 50%, currentColor 50%)',
-            'occlusal': 'linear-gradient(to bottom, transparent 50%, currentColor 50%)',
-            'mesial': 'linear-gradient(135deg, transparent 50%, currentColor 50%)',
-            'distal': 'linear-gradient(-135deg, transparent 50%, currentColor 50%)'
-        };
-        
-        if (surface !== 'whole' && colors[surface]) {
-            element.style.backgroundImage = colors[surface];
-        }
     }
 
     // Inisialisasi Three.js scene
@@ -165,39 +110,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Memuat model 3D gigi
-    async function loadToothModel(toothNumber, condition) {
+    async function loadToothModel(toothNumber, condition, gvBlackClass = null) {
         if (condition === 'extracted') return null;
 
         try {
-            // Tentukan path model berdasarkan nomor gigi
-            let modelPath;
-            if (toothNumber >= 11 && toothNumber <= 28) {
-                modelPath = `/models/top_${toothNumber}.glb`;
-            } else if (toothNumber >= 31 && toothNumber <= 48) {
-                modelPath = `/models/bot_${toothNumber}.glb`;
+            let modelName;
+            
+            // Tentukan nama model berdasarkan kondisi
+            if (condition === 'caries' && gvBlackClass) {
+                modelName = `${toothNumber}_class_${gvBlackClass}`;
             } else {
-                // Untuk gigi susu atau lainnya
-                modelPath = `/models/tooth_${toothNumber}.glb`;
+                // Untuk kondisi selain karies, gunakan model sehat
+                modelName = toothNumber.toString();
             }
 
             // Gunakan GLTFLoader untuk memuat model
             const loader = new THREE.GLTFLoader();
             const gltf = await new Promise((resolve, reject) => {
-                loader.load(modelPath, resolve, undefined, reject);
+                loader.load(`/models/${modelName}.glb`, resolve, undefined, (error) => {
+                    // Jika model spesifik tidak ditemukan, coba gunakan model default
+                    if (error && condition !== 'caries') {
+                        loader.load(`/models/${toothNumber}.glb`, resolve, undefined, reject);
+                    } else {
+                        reject(error);
+                    }
+                });
             });
 
             const model = gltf.scene;
             model.userData.toothNumber = toothNumber;
+            model.userData.isTooth = true;
             
             // Terapkan material berdasarkan kondisi
             model.traverse((child) => {
                 if (child.isMesh) {
                     child.material.color.setHex(toothConditions[condition] || 0xffffff);
-                    
-                    // Tambahkan efek untuk permukaan tertentu
-                    if (odontogramData[toothNumber]?.surface && odontogramData[toothNumber].surface !== 'whole') {
-                        // Implementasi efek permukaan bisa ditambahkan di sini
-                    }
                 }
             });
 
@@ -208,22 +155,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Menampilkan model 3D berdasarkan data odontogram
-    async function show3DModels() {
+    // Menampilkan model 3D berdasarkan jenis gigi (dewasa/anak)
+    async function show3DModels(type = 'adult') {
         const container = document.getElementById('tooth3dViewer') || init3DScene();
         container.style.display = 'block';
 
-        // Hapus model yang ada
+        // Hapus model gigi yang ada
         scene.children.filter(obj => obj.userData.isTooth).forEach(obj => scene.remove(obj));
 
-        // Muat dan tampilkan model untuk setiap gigi
-        for (const [toothNumber, data] of Object.entries(odontogramData)) {
+        // Daftar gigi dewasa dan anak
+        const adultTeeth = ['18','17','16','15','14','13','12','11',
+                          '21','22','23','24','25','26','27','28',
+                          '48','47','46','45','44','43','42','41',
+                          '31','32','33','34','35','36','37','38'];
+        
+        const childTeeth = ['55','54','53','52','51','61','62','63','64','65',
+                          '85','84','83','82','81','71','72','73','74','75'];
+
+        // Filter gigi yang akan dirender berdasarkan jenis
+        const teethToRender = type === 'adult' ? adultTeeth : childTeeth;
+        const dataToRender = teethToRender.reduce((acc, tooth) => {
+            if (odontogramData[tooth]) acc[tooth] = odontogramData[tooth];
+            return acc;
+        }, {});
+
+        // Muat dan tampilkan model untuk setiap gigi yang sesuai
+        for (const [toothNumber, data] of Object.entries(dataToRender)) {
             if (data.condition !== 'extracted') {
-                const model = await loadToothModel(toothNumber, data.condition);
+                const model = await loadToothModel(
+                    toothNumber, 
+                    data.condition, 
+                    data.condition === 'caries' ? data.gv_black_class : null
+                );
                 if (model) {
                     scene.add(model);
-                    
-                    // Posisikan model berdasarkan jenis gigi
                     positionToothModel(model, toothNumber);
                 }
             }
@@ -235,42 +200,68 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Posisikan model gigi berdasarkan nomor gigi
     function positionToothModel(model, toothNumber) {
-        // Implementasi logika penempatan gigi di scene
-        // Ini adalah contoh sederhana, perlu disesuaikan dengan kebutuhan
         const num = parseInt(toothNumber);
         
         if (num >= 11 && num <= 28) { // Gigi atas
-            const posX = (num - 19.5) * 0.3; // Posisi horizontal
+            const posX = (num - 19.5) * 0.3;
             model.position.set(posX, 1, 0);
         } else if (num >= 31 && num <= 48) { // Gigi bawah
-            const posX = (num - 39.5) * 0.3; // Posisi horizontal
+            const posX = (num - 39.5) * 0.3;
             model.position.set(posX, -1, 0);
+        } else if (num >= 51 && num <= 65) { // Gigi susu atas
+            const posX = ((num - 50) - 5.5) * 0.25;
+            model.position.set(posX, 1.5, 0);
+            model.scale.set(0.8, 0.8, 0.8);
+        } else if (num >= 71 && num <= 85) { // Gigi susu bawah
+            const posX = ((num - 70) - 5.5) * 0.25;
+            model.position.set(posX, -1.5, 0);
+            model.scale.set(0.8, 0.8, 0.8);
         }
         
-        model.rotation.y = Math.PI; // Putar gigi agar menghadap ke depan
+        model.rotation.y = Math.PI;
     }
 
     // Tambahkan model gusi
-    async function addGumModels() {
-        // Muat model gusi atas
-        try {
-            const loader = new THREE.GLTFLoader();
+    async function addGumModels(type = 'adult') {
+    try {
+        const loader = new THREE.GLTFLoader();
+        
+        // Muat model gusi berdasarkan jenis (dewasa/anak)
+        if (type === 'adult') {
+            // Gusi dewasa atas
             const upperGum = await new Promise((resolve, reject) => {
                 loader.load('/models/gusi_atas.glb', resolve, undefined, reject);
             });
             upperGum.scene.position.set(0, 1.2, 0);
             scene.add(upperGum.scene);
 
-            // Muat model gusi bawah
+            // Gusi dewasa bawah
             const lowerGum = await new Promise((resolve, reject) => {
                 loader.load('/models/gusi_bawah.glb', resolve, undefined, reject);
             });
             lowerGum.scene.position.set(0, -1.2, 0);
             scene.add(lowerGum.scene);
-        } catch (error) {
-            console.error('Error loading gum models:', error);
+        } else {
+            // Gusi anak atas (CGumTop)
+            const upperGumChild = await new Promise((resolve, reject) => {
+                loader.load('/models/CGumTop.glb', resolve, undefined, reject);
+            });
+            upperGumChild.scene.position.set(0, 1.5, 0);
+            upperGumChild.scene.scale.set(0.8, 0.8, 0.8);
+            scene.add(upperGumChild.scene);
+
+            // Gusi anak bawah (CGumBottom)
+            const lowerGumChild = await new Promise((resolve, reject) => {
+                loader.load('/models/CGumBottom.glb', resolve, undefined, reject);
+            });
+            lowerGumChild.scene.position.set(0, -1.5, 0);
+            lowerGumChild.scene.scale.set(0.8, 0.8, 0.8);
+            scene.add(lowerGumChild.scene);
         }
+    } catch (error) {
+        console.error('Error loading gum models:', error);
     }
+}
 
     // Event listener untuk klik gigi
     document.querySelectorAll('.tooth').forEach(tooth => {
@@ -281,101 +272,54 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedTooth = this.getAttribute('data-number');
             document.getElementById('selected-tooth').textContent = selectedTooth;
             
+            // Isi form dengan data yang ada
             if (odontogramData[selectedTooth]) {
                 document.getElementById('condition').value = odontogramData[selectedTooth].condition;
-                document.getElementById('surface').value = odontogramData[selectedTooth].surface;
+                document.getElementById('gv_black_class').value = odontogramData[selectedTooth].gv_black_class || '';
+                document.getElementById('surface').value = odontogramData[selectedTooth].surface || 'whole';
                 document.getElementById('notes').value = odontogramData[selectedTooth].notes || '';
+                
+                // Tampilkan GV Black jika kondisi karies
+                document.querySelector('.gv-black-container').classList.toggle(
+                    'hidden', 
+                    odontogramData[selectedTooth].condition !== 'caries'
+                );
             } else {
                 document.getElementById('condition').value = 'healthy';
+                document.getElementById('gv_black_class').value = '';
                 document.getElementById('surface').value = 'whole';
                 document.getElementById('notes').value = '';
+                document.querySelector('.gv-black-container').classList.add('hidden');
             }
         });
     });
 
-    // Event listener untuk simpan detail gigi
-    document.querySelector('.tooth-details button[type="submit"]').addEventListener('click', function(e) {
-        e.preventDefault();
-        updateOdontogramData();
+    // Event listener untuk perubahan kondisi
+    document.getElementById('condition').addEventListener('change', function() {
+        document.querySelector('.gv-black-container').classList.toggle(
+            'hidden', 
+            this.value !== 'caries'
+        );
     });
 
-    // Event listener untuk tombol tampilkan 3D
-    document.getElementById('show3dBtn').addEventListener('click', function() {
+    // Event listener untuk tombol 3D Dewasa
+    document.getElementById('show3dAdult')?.addEventListener('click', function() {
         if (Object.keys(odontogramData).length === 0) {
             showToast('error', 'Tidak ada data odontogram untuk ditampilkan');
             return;
         }
-        show3DModels();
+        show3DModels('adult');
     });
 
-    // Event listener untuk submit form utama
-    document.getElementById('patientForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        if (!validateForm()) return;
-        
-        document.getElementById('odontogram_data').value = JSON.stringify(odontogramData);
-        
-        const submitBtn = this.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Menyimpan...';
-        
-        try {
-            const formData = new FormData(this);
-            
-            // Convert checkboxes to proper values
-            formData.set('heart_disease', document.getElementById('heart_disease').checked ? '1' : '0');
-            formData.set('diabetes', document.getElementById('diabetes').checked ? '1' : '0');
-            formData.set('hepatitis', document.getElementById('hepatitis').checked ? '1' : '0');
-            
-            const response = await fetch(this.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                },
-                body: formData
-            });
-            
-            const result = await response.json();
-            
-            if (response.ok) {
-                showToast('success', 'Data pasien berhasil disimpan!');
-                setTimeout(() => {
-                    window.location.href = result.redirect || '/patients';
-                }, 2000);
-            } else {
-                showToast('error', result.message || 'Gagal menyimpan data pasien');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Submit Patient Data';
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showToast('error', 'Terjadi kesalahan jaringan');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Submit Patient Data';
+    // Event listener untuk tombol 3D Anak
+    document.getElementById('show3dChild')?.addEventListener('click', function() {
+        if (Object.keys(odontogramData).length === 0) {
+            showToast('error', 'Tidak ada data odontogram untuk ditampilkan');
+            return;
         }
+        show3DModels('child');
     });
-
-    // Fungsi untuk validasi form
-    function validateForm() {
-        const name = document.getElementById('name').value.trim();
-        const contact = document.getElementById('contact').value.trim();
-        
-        if (!name) {
-            showToast('error', 'Nama pasien harus diisi');
-            return false;
-        }
-        
-        if (!contact) {
-            showToast('error', 'Nomor kontak harus diisi');
-            return false;
-        }
-        
-        return true;
-    }
 
     // Inisialisasi 3D viewer
     init3DScene();
-    showToast('info', 'Silakan pilih gigi untuk mulai mengisi data');
 });

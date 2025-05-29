@@ -5,23 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PatientController extends Controller
 {
     public function show($id)
-{
-    $patient = Patient::with('odontogram')->findOrFail($id);
-    
-    return view('patients.show', [
-        'patient' => $patient,
-        'bloodTypes' => [
-            'A' => 'A',
-            'B' => 'B',
-            'AB' => 'AB',
-            'O' => 'O'
-        ]
-    ]);
-}
+    {
+        $patient = Patient::with('odontogram')->findOrFail($id);
+        
+        return view('patients.show', [
+            'patient' => $patient,
+            'bloodTypes' => [
+                'A' => 'A',
+                'B' => 'B',
+                'AB' => 'AB',
+                'O' => 'O'
+            ]
+        ]);
+    }
 
     public function store(Request $request)
     {
@@ -55,10 +56,28 @@ class PatientController extends Controller
             'odontogram_data' => 'nullable|json'
         ]);
 
-        
-
         try {
+            DB::beginTransaction();
+            
+            // Create patient
             $patient = Patient::create($validated);
+            
+            // Save odontogram data if exists
+            if ($request->odontogram_data) {
+                $odontogramData = json_decode($request->odontogram_data, true);
+                
+                foreach ($odontogramData as $toothNumber => $data) {
+                    $patient->odontogram()->create([
+                        'tooth_number' => $toothNumber,
+                        'condition' => $data['condition'],
+                        'gv_black_class' => $data['gv_black_class'] ?? null,
+                        'surface' => $data['surface'],
+                        'notes' => $data['notes']
+                    ]);
+                }
+            }
+            
+            DB::commit();
             
             Log::info('Patient created successfully', [
                 'patient_id' => $patient->id,
@@ -66,12 +85,13 @@ class PatientController extends Controller
             ]);
             
             return response()->json([
-            'success' => true,
-            'message' => 'Patient data saved successfully',
-            'redirect' => route('dokter.pasien') // Ganti dengan route yang sesuai
+                'success' => true,
+                'message' => 'Patient data saved successfully',
+                'redirect' => route('dokter.pasien')
             ]);
-            
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Error saving patient data', [
                 'error' => $e->getMessage(),
                 'data' => $request->except('odontogram_data')

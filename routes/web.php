@@ -66,10 +66,14 @@ Route::middleware(['auth', \App\Http\Middleware\CheckRole::class . ':dokter'])->
     });
     
     // Odontogram
-    Route::prefix('odontogram')->name('odontogram.')->group(function () {
-        Route::get('/{id}/model', [OdontogramController::class, 'showModel'])->name('view-model');
-        Route::post('/{id}/save', [OdontogramController::class, 'store'])->name('store');
-    });
+Route::prefix('odontogram')->name('odontogram.')->group(function () {
+    Route::get('/{id}/view-model', [OdontogramController::class, 'viewModel'])
+        ->name('view-model');
+    Route::get('/3d-viewer', [OdontogramController::class, 'show3dModel'])
+        ->name('3d-viewer');
+    Route::post('/{id}/save', [OdontogramController::class, 'store'])
+        ->name('store');
+});
     
     // Jadwal
     Route::resource('jadwal', ScheduleController::class)->except(['show']);

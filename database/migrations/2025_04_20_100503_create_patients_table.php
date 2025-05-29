@@ -37,7 +37,6 @@ return new class extends Migration
             $table->text('diastema')->nullable();
             $table->text('other_anomalies')->nullable();
             $table->text('doctor_notes')->nullable();
-            $table->json('odontogram_data')->nullable();
             
             $table->timestamps();
         });

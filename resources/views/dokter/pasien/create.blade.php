@@ -98,30 +98,30 @@
             </section>
 
          <!-- Odontogram Section -->
-            <section class="mb-8">
-                <div class="card">
-                    <div class="card-header bg-gray-100 p-4 rounded-t-lg">
-                        <h2 class="text-xl font-semibold">Odontogram</h2>
-                    </div>
-                    <div class="card-body p-4">
-                        @include('partials.odontogram')
-                        
-                        <div class="mt-4 flex space-x-3">
-                            <button id="save-odontogram" type="button" 
-                                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                                Simpan Odontogram
-                            </button>
-                            <button id="show-3d" type="button" 
-                                    class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 hidden">
-                                Tampilkan 3D Model
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+<section class="mb-8">
+    <div class="card">
+        <div class="card-header bg-gray-100 p-4 rounded-t-lg">
+            <h2 class="text-xl font-semibold">Odontogram</h2>
+        </div>
+        <div class="card-body p-4">
+            @include('partials.odontogram')
+            
+            <div class="mt-4 flex space-x-3 hidden" id="show3dButtons">
+                <button id="show3dAdult" type="button" 
+                        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                    Tampilkan 3D Dewasa
+                </button>
+                <button id="show3dChild" type="button" 
+                        class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+                    Tampilkan 3D Anak
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
 
             <!-- Dental Conditions Section -->
-<section class="mb-6 bg-white p-6 rounded-lg shadow-md">
+    <div class="p-6 border-b">
     <h2 class="text-xl font-semibold mb-4 text-gray-800">Dental Conditions</h2>
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -167,7 +167,7 @@
 </section>
 
 <!-- Doctor's Notes Section -->
-<section class="mb-6 bg-white p-6 rounded-lg shadow-md">
+<div class="p-6">
     <h2 class="text-xl font-semibold mb-4 text-gray-800">Doctor's Notes</h2>
     <textarea name="doctor_notes" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter any additional notes here"></textarea>
 </section>
