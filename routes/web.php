@@ -44,8 +44,10 @@ Route::middleware(['auth'])->group(function () {
 // ========================
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    // Tambahkan route admin lainnya di sini
+    Route::get('/reset-password', [AdminController::class, 'editPassword'])->name('admin.reset_password');
+    Route::post('/reset-password', [AdminController::class, 'updatePassword'])->name('admin.update_password');
 });
+
 
 // ========================
 // DOKTER ROUTES
@@ -83,7 +85,7 @@ Route::prefix('odontogram')->name('odontogram.')->group(function () {
 // API ROUTES (jika diperlukan)
 // ========================
 Route::prefix('api')->middleware('auth')->group(function () {
-    Route::get('/patients/search', [DokterController::class, 'search']);
+    Route::get('/patients/search', [DokterController::class, 'search'])->name('api.patients.search');
 });
 
 // ========================

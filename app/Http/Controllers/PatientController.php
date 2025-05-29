@@ -57,50 +57,43 @@ class PatientController extends Controller
         ]);
 
         try {
-            DB::beginTransaction();
+        DB::beginTransaction();
+        
+        $patient = Patient::create($validated);
+        
+        if ($request->odontogram_data) {
+            $odontogramData = json_decode($request->odontogram_data, true);
             
-            // Create patient
-            $patient = Patient::create($validated);
-            
-            // Save odontogram data if exists
-            if ($request->odontogram_data) {
-                $odontogramData = json_decode($request->odontogram_data, true);
-                
-                foreach ($odontogramData as $toothNumber => $data) {
-                    $patient->odontogram()->create([
-                        'tooth_number' => $toothNumber,
-                        'condition' => $data['condition'],
-                        'gv_black_class' => $data['gv_black_class'] ?? null,
-                        'surface' => $data['surface'],
-                        'notes' => $data['notes']
-                    ]);
+            foreach ($odontogramData as $toothNumber => $data) {
+                // Hanya simpan jika bukan kondisi default
+                if ($data['condition'] !== 'healthy' || $data['notes'] || $data['gv_black_class']) {
+                    $patient->odontogram()->updateOrCreate(
+                        ['tooth_number' => $toothNumber],
+                        [
+                            'condition' => $data['condition'],
+                            'surface' => $data['surface'],
+                            'gv_black_class' => $data['gv_black_class'] ?? null,
+                            'notes' => $data['notes'] ?? ''
+                        ]
+                    );
                 }
             }
-            
-            DB::commit();
-            
-            Log::info('Patient created successfully', [
-                'patient_id' => $patient->id,
-                'name' => $patient->name
-            ]);
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Patient data saved successfully',
-                'redirect' => route('dokter.pasien')
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            Log::error('Error saving patient data', [
-                'error' => $e->getMessage(),
-                'data' => $request->except('odontogram_data')
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to save patient data. Please try again.'
-            ], 500);
         }
+        
+        DB::commit();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Data pasien berhasil disimpan',
+            'redirect' => route('dokter.pasien.show', $patient->id)
+        ]);
+        
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+        ], 500);
+    }
     }
 }

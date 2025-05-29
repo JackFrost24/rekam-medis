@@ -12,21 +12,17 @@ class Odontogram extends Model
         'condition', 'surface', 'notes', 'gv_black_class'
     ];
 
-    public function patient(): BelongsTo
-    {
-        return $this->belongsTo(Patient::class);
+    public static function formatForDisplay($odontograms)
+{
+    $result = [];
+    foreach ($odontograms as $odontogram) {
+        $result[$odontogram->tooth_number] = [
+            'condition' => $odontogram->condition,
+            'surface' => $odontogram->surface,
+            'gv_black_class' => $odontogram->gv_black_class,
+            'notes' => $odontogram->notes
+        ];
     }
-
-    public function getConditionColorAttribute()
-    {
-        return match($this->condition) {
-            'healthy' => '#d1fae5',
-            'caries' => '#fecaca',
-            'filling' => '#bfdbfe',
-            'extracted' => '#e5e7eb',
-            'root_canal' => '#ddd6fe',
-            'crown' => '#fef08a',
-            default => '#ffffff'
-        };
-    }
+    return $result;
+}
 }

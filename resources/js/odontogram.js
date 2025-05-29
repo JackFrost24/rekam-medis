@@ -263,63 +263,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
-    // Event listener untuk klik gigi
-    document.querySelectorAll('.tooth').forEach(tooth => {
-        tooth.addEventListener('click', function() {
-            document.querySelectorAll('.tooth').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            
-            selectedTooth = this.getAttribute('data-number');
-            document.getElementById('selected-tooth').textContent = selectedTooth;
-            
-            // Isi form dengan data yang ada
-            if (odontogramData[selectedTooth]) {
-                document.getElementById('condition').value = odontogramData[selectedTooth].condition;
-                document.getElementById('gv_black_class').value = odontogramData[selectedTooth].gv_black_class || '';
-                document.getElementById('surface').value = odontogramData[selectedTooth].surface || 'whole';
-                document.getElementById('notes').value = odontogramData[selectedTooth].notes || '';
-                
-                // Tampilkan GV Black jika kondisi karies
-                document.querySelector('.gv-black-container').classList.toggle(
-                    'hidden', 
-                    odontogramData[selectedTooth].condition !== 'caries'
-                );
-            } else {
-                document.getElementById('condition').value = 'healthy';
-                document.getElementById('gv_black_class').value = '';
-                document.getElementById('surface').value = 'whole';
-                document.getElementById('notes').value = '';
-                document.querySelector('.gv-black-container').classList.add('hidden');
-            }
+       
+
+    // Submit form untuk menyimpan data odontogram
+    const odontogramForm = document.getElementById('odontogram-form');
+    if (odontogramForm) {
+        odontogramForm.addEventListener('submit', (e) => {
+            const odontogramInput = document.getElementById('odontogram-data');
+            odontogramInput.value = JSON.stringify(odontogramData);
         });
-    });
+    }
 
-    // Event listener untuk perubahan kondisi
-    document.getElementById('condition').addEventListener('change', function() {
-        document.querySelector('.gv-black-container').classList.toggle(
-            'hidden', 
-            this.value !== 'caries'
-        );
-    });
+    // Tombol tampilkan 3D gigi dewasa
+    const showAdultBtn = document.getElementById('show-3d-adult');
+    if (showAdultBtn) {
+        showAdultBtn.addEventListener('click', () => show3DModels('adult'));
+    }
 
-    // Event listener untuk tombol 3D Dewasa
-    document.getElementById('show3dAdult')?.addEventListener('click', function() {
-        if (Object.keys(odontogramData).length === 0) {
-            showToast('error', 'Tidak ada data odontogram untuk ditampilkan');
-            return;
-        }
-        show3DModels('adult');
-    });
+    // Tombol tampilkan 3D gigi anak
+    const showChildBtn = document.getElementById('show-3d-child');
+    if (showChildBtn) {
+        showChildBtn.addEventListener('click', () => show3DModels('child'));
+    }
 
-    // Event listener untuk tombol 3D Anak
-    document.getElementById('show3dChild')?.addEventListener('click', function() {
-        if (Object.keys(odontogramData).length === 0) {
-            showToast('error', 'Tidak ada data odontogram untuk ditampilkan');
-            return;
-        }
-        show3DModels('child');
-    });
-
-    // Inisialisasi 3D viewer
+    // Inisialisasi awal container 3D agar tidak dibuat berulang
     init3DScene();
 });

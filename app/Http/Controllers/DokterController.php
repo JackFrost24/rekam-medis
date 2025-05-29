@@ -59,6 +59,63 @@ class DokterController extends Controller
     ]);
     }
 
+    public function index(Request $request)
+{
+    $search = $request->query('search');
+
+    $patients = Patient::when($search, function($query, $search) {
+            return $query->where('name', 'like', "%{$search}%")
+                         ->orWhere('contact', 'like', "%{$search}%")
+                         ->orWhere('address', 'like', "%{$search}%");
+        })
+        ->orderBy('name')
+        ->paginate(10)
+        ->withQueryString();
+
+    return view('dokter.pasien.index', compact('patients', 'search'));
+}
+
+public function edit($id)
+{
+    $patient = Patient::findOrFail($id);
+
+    return view('dokter.pasien.edit', [
+        'patient' => $patient,
+        'bloodTypes' => ['A' => 'A', 'B' => 'B', 'AB' => 'AB', 'O' => 'O']
+    ]);
+}
+
+public function update(Request $request, $id)
+{
+    $patient = Patient::findOrFail($id);
+
+    $validated = $this->validatePatientData($request);
+
+    try {
+        $patient->update($validated);
+
+        // Jika ingin response JSON untuk AJAX
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('dokter.pasien.show', $patient->id)
+            ]);
+        }
+
+        return redirect()->route('dokter.pasien.show', $patient->id)
+                         ->with('success', 'Data pasien berhasil diperbarui');
+
+    } catch (\Exception $e) {
+        Log::error('Error updating patient', ['error' => $e->getMessage()]);
+
+        return $request->wantsJson()
+            ? response()->json(['error' => 'Gagal memperbarui data'], 500)
+            : back()->with('error', 'Gagal memperbarui data');
+    }
+}
+
+
+
     private function validatePatientData(Request $request)
     {
         return $request->validate([
