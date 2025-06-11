@@ -2,26 +2,35 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Patient extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
-        // General Information
-        'name', 'age', 'gender', 'contact', 'address',
-        
-        // Medical Information
-        'blood_type', 'blood_pressure', 'heart_disease', 'diabetes', 
-        'hepatitis', 'allergies', 'blood_disorders', 'other_diseases',
+        'name',
+        'age',
+        'gender',
+        'contact',
+        'address',
+        'blood_type',
+        'blood_pressure',
+        'heart_disease',
+        'diabetes',
+        'hepatitis',
+        'allergies',
+        'blood_disorders',
+        'other_diseases',
         'current_medication',
-        
-        // Dental Information
-        'occlusion', 'torus_palatinus', 'torus_mandibularis', 
-        'supernumerary', 'diastema', 'other_anomalies', 'doctor_notes',
+        'occlusion',
+        'torus_palatinus',
+        'torus_mandibularis',
+        'supernumerary',
+        'diastema',
+        'other_anomalies',
+        'doctor_notes',
         'odontogram_data'
     ];
 
@@ -29,7 +38,7 @@ class Patient extends Model
         'heart_disease' => 'boolean',
         'diabetes' => 'boolean',
         'hepatitis' => 'boolean',
-        'odontogram_data' => 'array'
+        'odontogram_data' => 'json'
     ];
 
     public static function bloodTypes()
@@ -38,16 +47,8 @@ class Patient extends Model
             'A' => 'A',
             'B' => 'B',
             'AB' => 'AB',
-            'O' => 'O'
+            'O' => 'O',
+            'unknown' => 'Unknown'
         ];
-    }
-
-    public function odontogram()
-{
-    return $this->hasMany(Odontogram::class);
-}
-public function appointments(): HasMany
-    {
-        return $this->hasMany(Appointment::class, 'patient_id');
     }
 }

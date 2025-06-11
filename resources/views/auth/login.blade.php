@@ -1,54 +1,61 @@
 @extends('layouts.guest')
 
-@section('title', 'Login')
+@section('title', 'Login Dokter')
 
 @section('content')
-    <div class="w-full max-w-md space-y-8">
+    <div class="text-center">
+        <img class="mx-auto h-20 w-auto" src="{{ asset('images/logo.png') }}" alt="Logo Klinik">
+        <h2 class="mt-6 text-2xl font-bold text-gray-900">Rekam Medis Klinik Gigi</h2>
+        <p class="mt-2 text-sm text-gray-600">Silakan login untuk mengakses sistem</p>
+    </div>
+
+    @if($errors->any())
+        <div class="mt-4 rounded-md bg-red-50 p-4">
+            <div class="text-sm text-red-600">
+                <ul class="list-disc pl-5 space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
+    <form class="mt-6 space-y-4" method="POST" action="{{ route('login') }}">
+        @csrf
+
         <div>
-            <img class="mx-auto h-20 sm:h-24 md:h-28 w-auto" src="{{ asset('images/logo.png') }}" alt="Logo Klinik">
-            <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Login ke akun Anda</h2>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email Dokter</label>
+            <input id="email" name="email" type="email" required autocomplete="email" autofocus
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                   value="{{ old('email') }}">
         </div>
 
-        <form class="mt-8 space-y-6" method="POST" action="{{ route('login') }}">
-            @csrf
+        <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <input id="password" name="password" type="password" required autocomplete="current-password"
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+        </div>
 
-            <div class="-space-y-px rounded-md shadow-sm">
-                <div>
-                    <label for="email" class="sr-only">Email address</label>
-                    <input id="email" name="email" type="email" autocomplete="email" required
-                           class="relative block w-full rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                           placeholder="Email address" value="{{ old('email') }}">
-                </div>
-                <div>
-                    <label for="password" class="sr-only">Password</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required
-                           class="relative block w-full rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                           placeholder="Password">
-                </div>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <input id="remember_me" name="remember" type="checkbox"
+                       class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <label for="remember_me" class="ml-2 block text-sm text-gray-900">Ingat saya</label>
             </div>
 
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <input id="remember_me" name="remember" type="checkbox"
-                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                    <label for="remember_me" class="ml-2 block text-sm text-gray-900">Ingat saya</label>
-                </div>
+            @if (Route::has('password.request'))
+                <a href="{{ route('password.request') }}" class="text-sm text-blue-600 hover:text-blue-500">
+                    Lupa password?
+                </a>
+            @endif
+        </div>
 
-                @if (Route::has('password.request'))
-                    <div class="text-sm">
-                        <a href="{{ route('password.request') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
-                            Lupa password?
-                        </a>
-                    </div>
-                @endif
-            </div>
-
-            <div>
-                <button type="submit"
-                        class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Login
-                </button>
-            </div>
-        </form>
-    </div>
+        <div>
+            <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                Login sebagai Dokter
+            </button>
+        </div>
+    </form>
 @endsection

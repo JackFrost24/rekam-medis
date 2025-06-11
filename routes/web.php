@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\PatientController; // Tambahkan ini
 use App\Http\Controllers\DokterController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OdontogramController;
@@ -48,44 +49,54 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::post('/reset-password', [AdminController::class, 'updatePassword'])->name('admin.update_password');
 });
 
-
 // ========================
 // DOKTER ROUTES
 // ========================
-Route::middleware(['auth', \App\Http\Middleware\CheckRole::class . ':dokter'])->prefix('dokter')->name('dokter.')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\CheckRole::class . ':dokter'])
+    ->prefix('dokter')
+    ->name('dokter.')
+    ->group(function () {
+        
     // Dashboard
     Route::get('/dashboard', [DokterController::class, 'dashboard'])->name('dashboard');
     
-    // Manajemen Pasien
+    // Manajemen Pasien (Ganti ke PatientController)
     Route::prefix('pasien')->name('pasien.')->group(function () {
-        Route::get('/', [DokterController::class, 'index'])->name('index');
-        Route::get('/create', [DokterController::class, 'create'])->name('create');
-        Route::post('/', [DokterController::class, 'store'])->name('store');
-        Route::get('/{id}', [DokterController::class, 'show'])->name('show');
-        Route::get('/{id}/edit', [DokterController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [DokterController::class, 'update'])->name('update');
-        Route::delete('/{id}', [DokterController::class, 'destroy'])->name('destroy');
+        Route::get('/', [PatientController::class, 'index'])->name('index');
+        Route::get('/create', [PatientController::class, 'create'])->name('create');
+        Route::post('/', [PatientController::class, 'store'])->name('store');
+        Route::get('/{patient}', [PatientController::class, 'show'])->name('show');
+        Route::get('/{patient}/edit', [PatientController::class, 'edit'])->name('edit');
+        Route::put('/{patient}', [PatientController::class, 'update'])->name('update');
+        Route::delete('/{patient}', [PatientController::class, 'destroy'])->name('destroy');
+        
+        // Pencarian pasien
+        Route::get('/search', [PatientController::class, 'search'])->name('search');
     });
     
     // Odontogram
-Route::prefix('odontogram')->name('odontogram.')->group(function () {
-    Route::get('/{id}/view-model', [OdontogramController::class, 'viewModel'])
-        ->name('view-model');
-    Route::get('/3d-viewer', [OdontogramController::class, 'show3dModel'])
-        ->name('3d-viewer');
-    Route::post('/{id}/save', [OdontogramController::class, 'store'])
-        ->name('store');
-});
+    Route::prefix('odontogram')->name('odontogram.')->group(function () {
+        Route::get('/{id}/view-model', [OdontogramController::class, 'viewModel'])
+            ->name('view-model');
+        Route::get('/3d-viewer', [OdontogramController::class, 'show3dModel'])
+            ->name('3d-viewer');
+        Route::post('/{id}/save', [OdontogramController::class, 'store'])
+            ->name('store');
+            
+        // Tambahan route untuk odontogram pasien
+        Route::post('/patient/{patient}/save', [OdontogramController::class, 'savePatientOdontogram'])
+            ->name('patient.save');
+    });
     
     // Jadwal
     Route::resource('jadwal', ScheduleController::class)->except(['show']);
 });
 
 // ========================
-// API ROUTES (jika diperlukan)
+// API ROUTES
 // ========================
 Route::prefix('api')->middleware('auth')->group(function () {
-    Route::get('/patients/search', [DokterController::class, 'search'])->name('api.patients.search');
+    Route::get('/patients/search', [PatientController::class, 'search'])->name('api.patients.search');
 });
 
 // ========================
